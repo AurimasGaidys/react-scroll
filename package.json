@@ -16,8 +16,8 @@
     "infinite",
     "scroll"
   ],
-  "author": "coral",
-  "license": "ISC",
+  "author": "corol",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/huangbinjie/react-scroll/issues"
   },

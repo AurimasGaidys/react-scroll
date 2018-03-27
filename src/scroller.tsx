@@ -64,6 +64,13 @@ export class InfiniteScroller extends React.Component<Props, State> {
     }
   }
 
+  protected resizeHandler = () => {
+    if (this.divDom.clientWidth !== this.width) {
+      this.width = this.divDom.clientWidth
+      this.measure()
+    }
+  }
+
   /**
    * first mount: get the native dom
    */
@@ -90,12 +97,11 @@ export class InfiniteScroller extends React.Component<Props, State> {
       this.projector.next()
     }
 
-    window.addEventListener("resize", () => {
-      if (this.divDom.clientWidth !== this.width) {
-        this.width = this.divDom.clientWidth
-        this.measure()
-      }
-    })
+    window.addEventListener("resize", this.resizeHandler)
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener("resize", this.resizeHandler)
   }
 
   public render() {

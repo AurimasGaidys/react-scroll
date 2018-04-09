@@ -61,6 +61,7 @@ export class InfiniteScroller extends React.Component<Props, State> {
    */
   public componentWillReceiveProps(nextProps: Props) {
     this.hasBottomTouched = false
+    this.isMeasuring = true
     this.projector.next(nextProps.items)
   }
 
@@ -197,6 +198,7 @@ export class InfiniteScroller extends React.Component<Props, State> {
       } else {
         this.projector.setAnchorFromCaches(this.divDom.scrollTop)
       }
+      console.log(this.projector.anchorItem)
     })
   }
 

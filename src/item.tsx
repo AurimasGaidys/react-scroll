@@ -4,15 +4,14 @@ import { Projector } from "./projector"
 export type Props = {
   item: any
   itemIndex: number
-  measure: () => void
   needAdjustment: boolean
-  onRenderCell: (item: any, index: number, measure: () => void) => React.ReactNode
+  onRenderCell: (item: any, index: number) => React.ReactNode
   upperPlaceholderHeight: number
   projector: Projector
 }
 
 export class Item extends React.Component<Props> {
-  public dom: HTMLDivElement
+  public dom!: HTMLDivElement
 
   public componentWillReceiveProps(nextProps: Props) {
     if (nextProps.needAdjustment) {
@@ -21,7 +20,7 @@ export class Item extends React.Component<Props> {
   }
 
   public shouldComponentUpdate(nextProps: Props) {
-    return this.props.itemIndex !== nextProps.itemIndex ? true : false
+    return this.props.itemIndex !== nextProps.itemIndex || this.props.item !== nextProps.item
   }
 
   public componentDidMount() {
@@ -30,7 +29,7 @@ export class Item extends React.Component<Props> {
 
   public render() {
     return <div ref={div => this.dom = div!}>
-      {this.props.onRenderCell(this.props.item, this.props.itemIndex, this.props.measure)}
+      {this.props.onRenderCell(this.props.item, this.props.itemIndex)}
     </div>
   }
 

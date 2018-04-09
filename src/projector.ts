@@ -9,11 +9,12 @@ export class Projector {
   public endIndex = 0
   public anchorItem = { index: 0, offset: 0 }
 
-  private callback: Callback
+  private callback!: Callback
   private guesstimatedItemCountPerPage: number
   private displayCount: number
   private scrollerDom: HTMLDivElement
   private upperHeight = 0
+  private needAdjustment = false
 
   constructor(
     public scroller: InfiniteScroller,
@@ -28,14 +29,17 @@ export class Projector {
   }
 
   public next(items?: any[]) {
-    if (items) this.items = items
+    if (items) {
+      this.cachedItemRect.length = 0
+      this.items = items
+      this.needAdjustment = true
+    }
 
     const projectedItems = this.items.slice(this.startIndex, this.endIndex + 1)
-    const startItem = this.cachedItemRect[this.startIndex]
-    // there are two case should adjust: 1、resize。2、quickly slipping。
-    const needAdjustment = startItem ? false : true
-    const upperPlaceholderHeight = startItem ? startItem.top : this.upperHeight
+    this.callback(projectedItems, this.upperHeight, this.estimateRestBottomHeight(), this.needAdjustment)
+  }
 
+  public estimateRestBottomHeight() {
     const cachedItemRectLength = this.cachedItemRect.length
     const endIndex = cachedItemRectLength === 0 ? this.endIndex : cachedItemRectLength
     const bottomCountDelta = this.items.length - endIndex
@@ -45,8 +49,7 @@ export class Projector {
     const lastItemRect = this.endIndex >= cachedItemRectLength ? this.cachedItemRect[cachedItemRectLength - 1] : this.cachedItemRect[this.endIndex]
     const lastItemRectBottom = lastItemRect ? lastItemRect.bottom : 0
     const underPlaceholderHeight = lastCachedItemRectBottom - lastItemRectBottom + unCachedItemCount * this.averageHeight
-
-    this.callback(projectedItems, upperPlaceholderHeight, underPlaceholderHeight, needAdjustment)
+    return underPlaceholderHeight
   }
 
   /**
@@ -63,6 +66,8 @@ export class Projector {
         this.endIndex = this.startIndex + this.displayCount - 1
         this.anchorItem.index = nextAnchorIndex
         this.anchorItem.offset = nextAnchorItem.top
+        this.upperHeight = this.cachedItemRect[this.startIndex].top
+        this.needAdjustment = false
       } else {
         const cachedItemLength = this.cachedItemRect.length
         const unCachedDelta = scrollTop - this.cachedItemRect[cachedItemLength - 1].bottom
@@ -71,6 +76,7 @@ export class Projector {
         this.endIndex = this.startIndex + this.displayCount - 1
         this.cachedItemRect.length = 0
         this.upperHeight = scrollTop
+        this.needAdjustment = true
       }
       this.next()
     }
@@ -83,22 +89,31 @@ export class Projector {
     const scrollTop = this.scrollerDom.scrollTop
     if (scrollTop < this.anchorItem.offset) {
       const startItem = this.cachedItemRect[this.startIndex]
-      const nextAnchorItem = this.cachedItemRect.find(item => item ? item.bottom >= scrollTop : false)
+      const nextAnchorItem = this.cachedItemRect.find(item => item ? item.bottom >= scrollTop : false)!
       const nextStartIndex = nextAnchorItem.index - 3
       if (this.cachedItemRect[nextStartIndex > 0 ? nextStartIndex : 0]) {
         this.startIndex = nextAnchorItem.index > 2 ? nextAnchorItem.index - 3 : 0
         this.endIndex = this.startIndex + this.displayCount - 1
         this.anchorItem.index = nextAnchorItem.index
         this.anchorItem.offset = nextAnchorItem.top
+        this.upperHeight = this.cachedItemRect[this.startIndex].top
+        this.needAdjustment = false
       } else {
         const guesstimatedAnchorIndex = Math.floor(Math.max(scrollTop, 0) / this.anchorItem.offset * this.anchorItem.index)
         this.startIndex = guesstimatedAnchorIndex > 2 ? guesstimatedAnchorIndex - 3 : guesstimatedAnchorIndex
         this.endIndex = this.startIndex + this.displayCount - 1
         this.cachedItemRect.length = 0
         this.upperHeight = this.scroller.state.upperPlaceholderHeight
+        this.needAdjustment = true
       }
       this.next()
     }
+  }
+
+  public setAnchorFromCaches(scrollTop: number) {
+    const anchor = this.cachedItemRect.find(item => item ? item.bottom > scrollTop : false)!
+    this.anchorItem.index = anchor.index
+    this.anchorItem.offset = anchor.top
   }
 
   public subscribe(callback: Callback) {

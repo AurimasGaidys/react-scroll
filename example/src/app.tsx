@@ -16,6 +16,7 @@ class App extends React.Component<{}, State> {
   componentDidMount() {
     // fetchDataWithImageAndText().then(messages => this.setState({ messages }))
     fetchDataWithText().then(messages => this.setState({ messages }))
+    // setTimeout(() => fetchDataWithText().then(messages => this.setState({ messages })), 5000)
   }
   render() {
     return (

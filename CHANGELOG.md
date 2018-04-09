@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.6
+
++ Fix bug #7
+
 ## 1.1.5
 
 + Fix a bug of set anchor index to three after first mount. #5

@@ -198,7 +198,6 @@ export class InfiniteScroller extends React.Component<Props, State> {
       } else {
         this.projector.setAnchorFromCaches(this.divDom.scrollTop)
       }
-      console.log(this.projector.anchorItem)
     })
   }
 
